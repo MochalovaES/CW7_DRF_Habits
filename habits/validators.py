@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from rest_framework.serializers import ValidationError
 
 from habits.models import Habits
@@ -9,6 +7,7 @@ class HabitValidator:
     """
     Исключить одновременный выбор связанной привычки и указания вознаграждения
     """
+
     def __init__(self, field1, field2):
         self.field1 = field1
         self.field2 = field2
@@ -17,21 +16,21 @@ class HabitValidator:
         val1 = dict(value).get(self.field1)
         val2 = dict(value).get(self.field2)
         if val1 and val2:
-            raise ValidationError("Нельзя одновременно выбирать"
-                                  " связанную привычку и вознаграждение!")
+            raise ValidationError("Нельзя одновременно выбирать связанную привычку и вознаграждение!")
 
 
 class TimeValidator:
     """
     Время выполнения должно быть не больше 120 секунд
     """
+
     def __init__(self, field1):
         self.field1 = field1
 
     def __call__(self, value):
         val = dict(value).get(self.field1)
-        duration_seconds = val.hour * 3600 + val.minute * 60 + val.second
-        if duration_seconds >= 120:
+        val_seconds = val.hour * 3600 + val.minute * 60 + val.second
+        if val_seconds >= 120:
             raise ValidationError("Время больше 120 секунд!")
 
 
@@ -39,24 +38,25 @@ class ConnectedHabitValidator:
     """
     В связанные привычки могут попадать только привычки с признаком приятной привычки
     """
+
     def __init__(self, field1):
         self.field1 = field1
 
     def __call__(self, value):
         val1 = dict(value).get(self.field1)
-        filter_list = list(Habits.objects.filter(is_nice=False).values())
+        filter_list = list(Habits.objects.filter(is_nice_habit=False).values())
         for i in filter_list:
             if val1 is not None:
                 if i['id'] == val1.id:
                     raise (ValidationError
-                           ("В связанные привычки могут попадать"
-                            " только привычки с признаком приятной привычки"))
+                           ("В связанные привычки могут попадать только привычки с признаком приятной привычки"))
 
 
 class NiceHabitValidator:
     """
     У приятной привычки не может быть вознаграждения или связанной привычки
      """
+
     def __init__(self, field1, field2, field3):
         self.field1 = field1
         self.field2 = field2
@@ -68,5 +68,4 @@ class NiceHabitValidator:
         val3 = dict(value).get(self.field3)
         if val1 is True and (val2 is not None or val3 is not None):
             raise (ValidationError
-                   ("У приятной привычки не может"
-                    " быть вознаграждения или связанной привычки"))
+                   ("У приятной привычки не может быть вознаграждения или связанной привычки"))

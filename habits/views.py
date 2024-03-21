@@ -1,4 +1,5 @@
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 
 from habits.models import Habits
 from habits.paginations import HabitsPagination
@@ -11,7 +12,7 @@ class HabitCreateAPIView(generics.CreateAPIView):
     Создание привычки
     """
     serializer_class = HabitsSerializer
-    queryset = Habits.objects.all()
+    permission_classes = [IsAuthenticated]
 
     # Функция привязывает автора к его привычке
     def perform_create(self, serializer):
@@ -35,7 +36,7 @@ class HabitUpdateAPIView(generics.UpdateAPIView):
     """
     serializer_class = HabitsSerializer
     queryset = Habits.objects.all()
-    permission_classes = [IsUser]
+    permission_classes = [IsAuthenticated, IsUser]
 
 
 class HabitDestroyAPIView(generics.DestroyAPIView):
@@ -44,7 +45,7 @@ class HabitDestroyAPIView(generics.DestroyAPIView):
     """
     serializer_class = HabitsSerializer
     queryset = Habits.objects.all()
-    permission_classes = [IsUser]
+    permission_classes = [IsAuthenticated, IsUser]
 
 
 class HabitListAPIView(generics.ListAPIView):
@@ -54,7 +55,11 @@ class HabitListAPIView(generics.ListAPIView):
     serializer_class = HabitsSerializer
     queryset = Habits.objects.all()
     pagination_class = HabitsPagination
-    permission_classes = [IsUser]
+    permission_classes = [IsAuthenticated, IsUser]
+
+    def get_queryset(self):
+        list_habits = super().get_queryset()
+        return list_habits.filter(user=self.request.user)
 
 
 class HabitPublicAPIView(generics.ListAPIView):
@@ -62,4 +67,6 @@ class HabitPublicAPIView(generics.ListAPIView):
     Список публичных привычек
     """
     serializer_class = HabitsSerializer
-    queryset = Habits.objects.filter(is_public=True)
+    queryset = Habits.objects.all().filter(is_public=True)
+    pagination_class = HabitsPagination
+    permission_classes = [IsAuthenticated]

@@ -6,11 +6,9 @@ from users.models import User
 
 
 class HabitApiTestCase(APITestCase):
-    """
-    Тесты на CRUD привычек
-    """
+    """ Тесты на CRUD привычек"""
 
-    def setUp(self) -> None:
+    def setUp(self):
         self.user = User.objects.create(
             name="testuser",
             email="testuser@test.com",
@@ -18,32 +16,30 @@ class HabitApiTestCase(APITestCase):
             password='12345'
         )
         self.habit = Habits.objects.create(
-            id=1,
+            id=10,
             user=self.user,
             place='Дом',
-            time="11:00",
+            time='11:42',
             action='Выпить воды',
             is_nice_habit=False,
-            periodicity="ежедневно",
-            duration_time="00:01",
+            periodicity='daily',
+            duration_time='00:01',
             reward='Съесть яблоко',
             is_public=True,
         )
 
-    def test_create_habit(self):
-        """
-        Тестирование создания привычки
-        """
+    def test_create_habits(self):
+        """ Тестирование создания привычки"""
 
         data = {
             "user": self.user.pk,
             "place": "Дом",
-            "time": "12:00",
+            "time": "11:42",
             "action": "Выпить воды",
-            "periodicity": "ежедневно",
-            "duration_time": "00:01",
             "reward": "Съесть яблоко",
+            "periodicity": "daily",
             "is_public": False,
+            "duration_time": "00:01",
         }
         self.client.force_authenticate(user=self.user)
         response = self.client.post(
@@ -54,10 +50,8 @@ class HabitApiTestCase(APITestCase):
             status.HTTP_201_CREATED
         )
 
-    def test_list_habit(self):
-        """
-        Тестирование вывода списка привычек
-        """
+    def test_list_habits(self):
+        """ Тестирование вывода списка привычек """
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get(
@@ -67,16 +61,45 @@ class HabitApiTestCase(APITestCase):
             status.HTTP_200_OK
         )
 
-    def test_delete_habit(self):
-        """
-        Тестирование удаления привычки
-        """
+    def test_retrieve_habits(self):
+        """Тестирование вывода одной привычки"""
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(
+            '/retrieve/10/')
+        self.assertEquals(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+    def test_update_habits(self):
+        """Тестирование редактирования привычки """
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(
+            '/update/10/')
+        self.assertEquals(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+    def test_delete_habits(self):
+        """Тестирование удаления привычки"""
 
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(
-            '/destroy/1/')
+            '/destroy/10/')
         print(response)
         self.assertEquals(
             response.status_code,
             status.HTTP_204_NO_CONTENT
+        )
+
+    def test_list_public_habits(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(
+            '/list_public/')
+        self.assertEquals(
+            response.status_code,
+            status.HTTP_200_OK
         )

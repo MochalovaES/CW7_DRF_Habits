@@ -21,7 +21,7 @@ class UserAPITest(APITestCase):
             "password": "12345"
         }
         response = self.client.post(
-            '/create_user/',
+            '/user/create/',
             data=data)
         self.assertEquals(
             response.status_code,
